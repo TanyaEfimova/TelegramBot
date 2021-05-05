@@ -4,8 +4,18 @@
     {
         public string CreateTextMessage(Conversation chat)
         {
-            string delimiter = ",";
-            var text = "Your history: " + string.Join(delimiter, chat.GetTextMessages().ToArray());
+            var text = "";
+
+            if (chat.GetLastMessage() == "/saymehi")
+            {
+                text = "привет";
+            }
+            else
+            {
+                var delimiter = ",";
+                text = "История ваших сообщений: " + string.Join(delimiter, chat.GetTextMessages().ToArray());
+            }
+
             return text;
         }
     }
