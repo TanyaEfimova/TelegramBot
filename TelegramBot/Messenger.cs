@@ -6,14 +6,18 @@
         {
             var text = "";
 
-            if (chat.GetLastMessage() == "/saymehi")
+            switch (chat.GetLastMessage())
             {
-                text = "привет";
-            }
-            else
-            {
-                var delimiter = ",";
-                text = "История ваших сообщений: " + string.Join(delimiter, chat.GetTextMessages().ToArray());
+                case "/saymehi":
+                    text = "привет";
+                    break;
+                case "/askme":
+                    text = "как дела";
+                    break;
+                default:
+                    var delimiter = ",";
+                    text = "История ваших сообщений: " + string.Join(delimiter, chat.GetTextMessages().ToArray());
+                    break;
             }
 
             return text;
