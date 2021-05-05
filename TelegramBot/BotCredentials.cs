@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace TelegramBot
+﻿namespace TelegramBot
 {
     public static class BotCredentials
     {
