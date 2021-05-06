@@ -1,58 +1,37 @@
 ﻿using System.Collections.Generic;
+using System.Threading.Tasks;
+using Telegram.Bot;
 using Telegram.Bot.Types.ReplyMarkups;
 
 namespace TelegramBot
 {
     class Messenger
     {
-        public string CreateTextMessage(Conversation chat)
-        {
-            var text = "";
+        private ITelegramBotClient botClient;
+        private CommandParser parser;
 
-            switch (chat.GetLastMessage())
-            {
-                case "/saymehi":
-                    text = "привет";
-                    break;
-                case "/askme":
-                    text = "как дела";
-                    break;
-                default:
-                    var delimiter = ",";
-                    text = "История ваших сообщений: " + string.Join(delimiter, chat.GetTextMessages().ToArray());
-                    break;
-            }
+        public Messenger(ITelegramBotClient botClient)
+        {
+            this.botClient = botClient;
+            parser = new CommandParser();
+
+            RegisterCommands();
+        }
+
+        private void RegisterCommands()
+        {
+            parser.AddCommand(new SayHiCommand());
+            parser.AddCommand(new AskMeCommand());
+            parser.AddCommand(new PoemButtonCommand(botClient));
+        }
+
+        public string CreateTextMessage()
+        {
+            var text = "Not a command";
 
             return text;
         }
 
-        public string CreateTextMessage(Conversation chat, out InlineKeyboardMarkup keyboard)
-        {
-            var text = "";
-
-            switch (chat.GetLastMessage())
-            {
-                case "/saymehi":
-                    text = "привет";
-                    keyboard = null;
-                    break;
-                case "/askme":
-                    text = "как дела";
-                    keyboard = null;
-                    break;
-                case "/poembuttons":
-                    text = "Выберите поэта";
-                    keyboard = ReturnKeyBoard();
-                    break;
-                default:
-                    var delimiter = ",";
-                    text = "История ваших сообщений: " + string.Join(delimiter, chat.GetTextMessages().ToArray());
-                    keyboard = null;
-                    break;
-            }
-
-            return text;
-        }
 
         public InlineKeyboardMarkup ReturnKeyBoard()
         {
@@ -76,5 +55,56 @@ namespace TelegramBot
             return keyboard;
         }
 
+        public async Task MakeAnswer(Conversation chat)
+        {
+            var lastmessage = chat.GetLastMessage();
+
+            if (parser.IsMessageCommand(lastmessage))
+            {
+                await ExecCommand(chat, lastmessage);
+            }
+            else
+            {
+                var text = CreateTextMessage();
+
+                await SendText(chat, text);
+            }
+        }
+
+        public async Task ExecCommand(Conversation chat, string command)
+        {
+            if (parser.IsTextCommand(command))
+            {
+                var text = parser.GetMessageText(command);
+
+                await SendText(chat, text);
+            }
+
+            if (parser.IsButtonCommand(command))
+            {
+                var keys = parser.GetKeyBoard(command);
+                var text = parser.GetInformationalMessage(command);
+                parser.AddCallback(command, chat.GetId());
+
+                await SendTextWithKeyBoard(chat, text, keys);
+            }
+        }
+
+        private async Task SendText(Conversation chat, string text)
+        {
+            await botClient.SendTextMessageAsync(
+                  chatId: chat.GetId(),
+                  text: text
+                );
+        }
+
+        private async Task SendTextWithKeyBoard(Conversation chat, string text, InlineKeyboardMarkup keyboard)
+        {
+            await botClient.SendTextMessageAsync(
+                  chatId: chat.GetId(),
+                  text: text,
+                  replyMarkup: keyboard
+                );
+        }
     }
 }

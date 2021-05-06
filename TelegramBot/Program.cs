@@ -21,7 +21,6 @@ namespace TelegramBot
             } while (command != "stop");
 
             bot.Stop();
-
         }
     }
 }

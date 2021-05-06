@@ -1,10 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Telegram.Bot;
 using Telegram.Bot.Args;
-using Telegram.Bot.Types.ReplyMarkups;
 
 namespace TelegramBot
 {
@@ -19,8 +16,8 @@ namespace TelegramBot
         public BotMessageLogic(ITelegramBotClient botClient)
         {
             this.botClient = botClient;
+            messanger = new Messenger(botClient);
             chatList = new Dictionary<long, Conversation>();
-            messanger = new Messenger();
         }
         public async Task Response(MessageEventArgs e)
         {
@@ -37,23 +34,12 @@ namespace TelegramBot
 
             chat.AddMessage(e.Message);
 
-            await SendTextWithKeyBoard(chat);
+            await SendMessage(chat);
         }
 
-        private async Task SendTextMessage(Conversation chat)
+        private async Task SendMessage(Conversation chat)
         {
-            var text = messanger.CreateTextMessage(chat);
-
-            await botClient.SendTextMessageAsync(
-            chatId: chat.GetId(), text: text);
-        }
-
-        private async Task SendTextWithKeyBoard(Conversation chat)
-        {
-            var text = messanger.CreateTextMessage(chat, out InlineKeyboardMarkup keyboard);
-
-            await botClient.SendTextMessageAsync(
-            chatId: chat.GetId(), text: text, replyMarkup: keyboard);
+            await messanger.MakeAnswer(chat);
         }
     }
 }
