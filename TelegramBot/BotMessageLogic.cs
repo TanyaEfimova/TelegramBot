@@ -4,6 +4,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Telegram.Bot;
 using Telegram.Bot.Args;
+using Telegram.Bot.Types.ReplyMarkups;
 
 namespace TelegramBot
 {
@@ -36,7 +37,7 @@ namespace TelegramBot
 
             chat.AddMessage(e.Message);
 
-            await SendTextMessage(chat);
+            await SendTextWithKeyBoard(chat);
         }
 
         private async Task SendTextMessage(Conversation chat)
@@ -45,6 +46,14 @@ namespace TelegramBot
 
             await botClient.SendTextMessageAsync(
             chatId: chat.GetId(), text: text);
+        }
+
+        private async Task SendTextWithKeyBoard(Conversation chat)
+        {
+            var text = messanger.CreateTextMessage(chat, out InlineKeyboardMarkup keyboard);
+
+            await botClient.SendTextMessageAsync(
+            chatId: chat.GetId(), text: text, replyMarkup: keyboard);
         }
     }
 }
